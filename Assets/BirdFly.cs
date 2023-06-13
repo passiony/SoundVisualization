@@ -65,8 +65,6 @@ public class BirdFly : MonoBehaviour
     
     private void OnFrenquencyEvent(int[] args)
     {
-        Debug.Log($"OnFrenquencyEvent : {args[0]},{args[1]}");
-
         foreach (var pair in m_AnimalDic)
         {
             if (lastArgs.Contains(pair.Key) && args.Contains(pair.Key))//长音

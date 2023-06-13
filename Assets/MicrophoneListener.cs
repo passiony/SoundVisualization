@@ -21,7 +21,8 @@ public class MicrophoneListener : MonoBehaviour
     public int scaleMultiplier = 100;
     public float threhold = 10;
     public int channelCount = 1;
-    [FormerlySerializedAs("frames")] public int frameCount = 60;
+
+    public int frameCount = 60;
     public UnityEvent<int[]> FrenquencyEvent;
 
     private int[] frenquncies = new int[8] { 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -70,7 +71,7 @@ public class MicrophoneListener : MonoBehaviour
         if (frame >= frameCount)
         {
             frame = 0;
-            int[] arr2 = FindTopTwoIndices(frenquncies);
+            int[] arr2 = FindTopTwoIndices(frenquncies, channelCount);
             for (int i = 0; i < frenquncies.Length; i++)
             {
                 frenquncies[i] = 0;
@@ -158,7 +159,7 @@ public class MicrophoneListener : MonoBehaviour
         return new[] { maxIndex, secondMaxIndex };
     }
 
-    static int[] FindTopTwoIndices(int[] arr)
+    static int[] FindTopTwoIndices(int[] arr,int channel)
     {
         int maxIndex = -1;
         int secondMaxIndex = -1;
@@ -181,6 +182,10 @@ public class MicrophoneListener : MonoBehaviour
             }
         }
 
+        if (channel == 1)
+        {
+            return new[] { maxIndex };
+        }
         return new[] { maxIndex, secondMaxIndex };
     }
 
