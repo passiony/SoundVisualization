@@ -5,7 +5,7 @@ using DG.Tweening;
 using UnityEngine;
 
 [Serializable]
-public class AnimalInfo
+public class AnimalInfo//小鸟对象数据，频率+go
 {
     public int frenquncy;
     public GameObject go;
@@ -14,6 +14,7 @@ public class AnimalInfo
 
 public class BirdFly : MonoBehaviour
 {
+    //小鸟游戏对象数据
     public AnimalInfo[] m_Animals;
 
     private MicrophoneListener listener;
@@ -23,9 +24,8 @@ public class BirdFly : MonoBehaviour
     void Awake()
     {
         listener = gameObject.GetComponent<MicrophoneListener>();
-        listener.FrenquencyEvent.AddListener(OnFrenquencyEvent);
-
-        m_AnimalDic = new Dictionary<int, AnimalInfo>();
+        listener.FrenquencyEvent.AddListener(OnFrenquencyEvent);//监听频率变化事件
+        m_AnimalDic = new Dictionary<int, AnimalInfo>();//存储动物频率和go
         foreach (var animal in m_Animals)
         {
             m_AnimalDic.Add(animal.frenquncy, animal);
@@ -67,6 +67,7 @@ public class BirdFly : MonoBehaviour
     {
         foreach (var pair in m_AnimalDic)
         {
+            //上一帧和本帧频率一样就是长音，不一样就是短音
             if (lastArgs.Contains(pair.Key) && args.Contains(pair.Key))//长音
             {
                 var animal = pair.Value;

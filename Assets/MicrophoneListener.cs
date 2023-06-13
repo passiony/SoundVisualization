@@ -1,25 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Serialization;
 
 [RequireComponent(typeof(AudioSource))]
 public class MicrophoneListener : MonoBehaviour
 {
-    private AudioSource m_AudioSouce;
-    private float[] spectrumData = new float[512];
-    private float[] _fragBand = new float[8];
+    private AudioSource m_AudioSouce;//声音播放器
+    private float[] spectrumData = new float[512];//存储音频的fft数据
+    private float[] _fragBand = new float[8];//存储8通达的频率数据
 
-    public GameObject[] obj;
-    public int scaleMultiplier = 100;
-    public float threhold = 10;
-    public int channelCount = 1;
+    public GameObject[] obj;//声音可视化游戏对象
+    public int scaleMultiplier = 100;//声音数据缩放值，为了可视化效果更明显
+    public float threhold = 10;//检测声音频率有效阈值
+    public int channelCount = 1;//检测频率通道数
 
-    public int frameCount = 60;
-    public UnityEvent<int[]> FrenquencyEvent;
+    public int frameCount = 60;//抛出事件帧数
+    public UnityEvent<int[]> FrenquencyEvent;//事件
 
     private int[] frenquncies = new int[8] { 0, 0, 0, 0, 0, 0, 0, 0 };
     private int frame = 0;
@@ -31,9 +28,9 @@ public class MicrophoneListener : MonoBehaviour
 
         while (true)
         {
-            StartMicrophoneListener();
+            StartMicrophoneListener();//开始录音
             await Task.Delay(TimeSpan.FromSeconds(30));
-            StopMicrophoneListener();
+            StopMicrophoneListener();//停止录音
             await Task.Delay(TimeSpan.FromMilliseconds(10));
         }
     }
@@ -42,8 +39,10 @@ public class MicrophoneListener : MonoBehaviour
     {
         //处理音频
         ProcessSound();
+        //声音可视化
         ShowBox();
 
+        //计算最高通道
         var arr = FindTopTwoIndices(_fragBand, threhold, channelCount);
         for (int i = 0; i < channelCount; i++)
         {
@@ -51,16 +50,17 @@ public class MicrophoneListener : MonoBehaviour
                 frenquncies[arr[i]]++;
         }
 
-        frame++;
-        if (frame >= frameCount)
+        //10帧发送一次数据
+        if (++frame >= frameCount)
         {
             frame = 0;
+            //计算最多次数的频率
             int[] arr2 = FindTopTwoIndices(frenquncies, channelCount);
             for (int i = 0; i < frenquncies.Length; i++)
             {
                 frenquncies[i] = 0;
             }
-
+            //事件发出
             FrenquencyEvent?.Invoke(arr2);
         }
     }
@@ -115,6 +115,7 @@ public class MicrophoneListener : MonoBehaviour
         }
     }
 
+    //显示声音可视化
     void ShowBox()
     {
         for (int i = 0; i < 8; i++)
@@ -124,6 +125,13 @@ public class MicrophoneListener : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 计算最高数值
+    /// </summary>
+    /// <param name="arr"></param>
+    /// <param name="threhold">阈值，低于阈值不计入结果</param>
+    /// <param name="channel">通道1</param>
+    /// <returns></returns>
     int[] FindTopTwoIndices(float[] arr, float threhold, int channel)
     {
         int maxIndex = -1;
@@ -187,7 +195,7 @@ public class MicrophoneListener : MonoBehaviour
     }
 
 
-
+    //声音后处理生命周期
     private void OnAudioFilterRead(float[] data, int channels)
     {
         for (int i = 0; i < data.Length; i++)
