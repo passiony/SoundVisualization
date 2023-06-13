@@ -630,9 +630,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11c464eb63be09741ad9154bf76de535, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  startMicOnStartup: 1
+  startMicOnStartup: 0
   stopMicrophoneListener: 0
-  startMicrophoneListener: 1
+  startMicrophoneListener: 0
   obj:
   - {fileID: 1384502741988275}
   - {fileID: 1262852719788795}
@@ -643,8 +643,8 @@ MonoBehaviour:
   - {fileID: 1249922560583517}
   - {fileID: 1489520836668499}
   scaleMultiplier: 100
-  threhold: 15
-  channelCount: 2
+  threhold: 10
+  channelCount: 1
   frameCount: 10
   FrenquencyEvent:
     m_PersistentCalls:
@@ -660,7 +660,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
@@ -938,7 +938,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &4003617786423419
 Transform:
   m_ObjectHideFlags: 0

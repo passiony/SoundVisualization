@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Serialization;
@@ -7,13 +9,7 @@ using UnityEngine.Serialization;
 [RequireComponent(typeof(AudioSource))]
 public class MicrophoneListener : MonoBehaviour
 {
-    public bool startMicOnStartup = true;
-    public bool stopMicrophoneListener = false;
-    public bool startMicrophoneListener = false;
-    private bool microphoneListenerOn = false;
-
     private AudioSource m_AudioSouce;
-    private float timeSinceRestart = 0;
     private float[] spectrumData = new float[512];
     private float[] _fragBand = new float[8];
 
@@ -28,39 +24,27 @@ public class MicrophoneListener : MonoBehaviour
     private int[] frenquncies = new int[8] { 0, 0, 0, 0, 0, 0, 0, 0 };
     private int frame = 0;
 
-    void Start()
+    async void Start()
     {
         Application.targetFrameRate = 60;
-        if (startMicOnStartup)
+        RestartMicrophoneListener();
+
+        while (true)
         {
-            RestartMicrophoneListener();
             StartMicrophoneListener();
+            await Task.Delay(TimeSpan.FromSeconds(30));
+            StopMicrophoneListener();
+            await Task.Delay(TimeSpan.FromMilliseconds(10));
         }
     }
 
     void Update()
     {
-        if (stopMicrophoneListener)
-        {
-            StopMicrophoneListener();
-        }
-
-        if (startMicrophoneListener)
-        {
-            StartMicrophoneListener();
-        }
-
-        stopMicrophoneListener = false;
-        startMicrophoneListener = false;
-
-        //创建Microphone实例
-        MicrophoneIntoAudioSource(microphoneListenerOn);
-
         //处理音频
         ProcessSound();
         ShowBox();
 
-        var arr = FindTopTwoIndices(_fragBand, threhold);
+        var arr = FindTopTwoIndices(_fragBand, threhold, channelCount);
         for (int i = 0; i < channelCount; i++)
         {
             if (arr[i] > -1)
@@ -84,7 +68,6 @@ public class MicrophoneListener : MonoBehaviour
     //停止录制
     public void StopMicrophoneListener()
     {
-        microphoneListenerOn = false;
         m_AudioSouce.Stop();
         m_AudioSouce.clip = null;
 
@@ -94,10 +77,18 @@ public class MicrophoneListener : MonoBehaviour
     //开始录制
     public void StartMicrophoneListener()
     {
-        microphoneListenerOn = true;
-        RestartMicrophoneListener();
+        m_AudioSouce.Stop();
+        m_AudioSouce.clip = Microphone.Start(null, true, 360, 44100);
+        while (!(Microphone.GetPosition(null) > 0)){}
+        m_AudioSouce.Play(); // Play the audio source
     }
 
+    public void RestartMicrophoneListener()
+    {
+        m_AudioSouce = GetComponent<AudioSource>();
+        m_AudioSouce.clip = null;
+    }
+    
     //处理声音数据，通过FFT算法
     public void ProcessSound()
     {
@@ -133,7 +124,7 @@ public class MicrophoneListener : MonoBehaviour
         }
     }
 
-    int[] FindTopTwoIndices(float[] arr, float threhold)
+    int[] FindTopTwoIndices(float[] arr, float threhold, int channel)
     {
         int maxIndex = -1;
         int secondMaxIndex = -1;
@@ -156,10 +147,15 @@ public class MicrophoneListener : MonoBehaviour
             }
         }
 
+        if (channel == 1)
+        {
+            return new[] { maxIndex };
+        }
+
         return new[] { maxIndex, secondMaxIndex };
     }
 
-    static int[] FindTopTwoIndices(int[] arr,int channel)
+    static int[] FindTopTwoIndices(int[] arr, int channel)
     {
         int maxIndex = -1;
         int secondMaxIndex = -1;
@@ -186,31 +182,11 @@ public class MicrophoneListener : MonoBehaviour
         {
             return new[] { maxIndex };
         }
+
         return new[] { maxIndex, secondMaxIndex };
     }
 
-    public void RestartMicrophoneListener()
-    {
-        m_AudioSouce = GetComponent<AudioSource>();
-        m_AudioSouce.clip = null;
-        timeSinceRestart = Time.time;
-    }
 
-    void MicrophoneIntoAudioSource(bool MicrophoneListenerOn)
-    {
-        if (MicrophoneListenerOn)
-        {
-            if (Time.time - timeSinceRestart > 0.5f && !Microphone.IsRecording(null))
-            {
-                m_AudioSouce.clip = Microphone.Start(null, true, 999, 44100);
-                while (!(Microphone.GetPosition(null) > 0))
-                {
-                }
-
-                m_AudioSouce.Play(); // Play the audio source
-            }
-        }
-    }
 
     private void OnAudioFilterRead(float[] data, int channels)
     {
