@@ -11,11 +11,14 @@ public class MicrophoneListener : MonoBehaviour
 
     [SerializeField] private VoiceVisualize m_visualize;
 
+    private void Awake()
+    {
+        m_AudioSouce = GetComponent<AudioSource>();
+        m_AudioSouce.clip = null;
+    }
+
     async void Start()
     {
-        Application.targetFrameRate = 60;
-        RestartMicrophoneListener();
-
         while (true)
         {
             StartMicrophoneListener(); //开始录音
@@ -52,12 +55,6 @@ public class MicrophoneListener : MonoBehaviour
         }
 
         m_AudioSouce.Play(); // Play the audio source
-    }
-
-    public void RestartMicrophoneListener()
-    {
-        m_AudioSouce = GetComponent<AudioSource>();
-        m_AudioSouce.clip = null;
     }
 
     //处理声音数据，通过FFT算法
